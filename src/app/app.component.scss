@@ -1,0 +1,388 @@
+* {
+    display: flex;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+    color: #202021;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    }
+  
+  :host {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      font-size: 14px;
+      color: #333;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  
+  p {
+    margin: 0;
+  }
+  
+  .spacer {
+    flex: 1;
+  }
+  
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    align-items: center;
+    background-color: #6aa1c4;
+    font-weight: 600;
+    border-radius: 0px;
+    img {
+      margin-right: 20px;
+    }
+  }
+  
+  /* Button container */
+  .button-container {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;  
+    height: inherit;
+  }
+  
+  /* Button */
+  .button {
+    all: unset;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: inherit;
+    border-radius: 4px;
+    width: auto;
+    height: inherit;
+    padding: 0 10px 0;
+    transition: all 0.2s ease-in-out;
+  }
+  .button.active {
+    background-color: #4e758d;
+  }
+  
+  /* Large Icon */
+  .large-icon {
+    font-size: 22px;
+  }
+  .button .large-icon {
+    margin-right: 10px;
+  }
+  
+  /* all teams dropdown menu */
+  .teams-dropdown {
+    position: relative;
+    display: block;
+    align-items: center;
+    height: inherit;
+  }
+  .teams-dropdown-content {
+    display: none;
+    width: auto;
+    
+    position: absolute;
+    z-index: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    column-count: 1;
+    column-gap: 10px;
+    top: 100%;
+    background-color: rgba(228, 227, 227);
+    border: 5px solid #ccc;
+    border-top-style: inset;
+  }
+  .teams-dropdown-column {
+    display: block;
+    column-count: 3;
+    justify-content: space-between;
+    align-items: center;
+    top: 100%;
+  }
+  .teams-dropdown-subheader {
+    font-weight: bold;
+    margin-bottom: 5px;
+    flex-direction: column;
+    width: 250px;
+    column-count: 1;
+    align-items: center;
+    .button {
+      font-size: small;
+      height: 20px;
+      padding: 0;
+      margin: 0;
+    }
+  }
+  .teams-dropdown-league {
+    font-size: large;
+    font-weight: bold;
+    padding: 10px;
+    margin-bottom: 5px;
+    width: 100%;
+    flex-direction: column;
+    .teams-dropdown-column {
+      display: flex;
+      justify-content: center;
+      align-content: space-evenly;
+      column-count: 3;
+      top: 100%;
+    }
+  }
+  .teams-dropdown-content .dropdown-column {
+    margin-right: 0;
+  }
+  .teams-dropdown-item {
+    display: block;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+  }
+  .stats-dropdown {
+    position: relative;
+    display: block;
+    align-items: center;
+    height: inherit;
+  }
+  .stats-dropdown-content {
+    display: none;
+    position: absolute;
+    left: 0;
+    width: 100%; 
+    top: 100%;
+    background-color: rgba(228, 227, 227);
+    border: 4px solid #ccc;
+    border-top-style: inset;
+    .button {
+      width: 100%;
+      font-size: small;
+      height: 20px;
+      padding: 0;
+      margin: 0;
+    }
+  }
+  /* Main content */
+  .content {
+    margin: 82px auto 32px;
+    padding: 0 16px;
+    max-width: 100%;
+    display: flex;
+    flex-direction: row;
+    
+    .main-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 50px;
+      column-gap: 50px;
+    }
+    .side-section {
+      display: flex;
+      flex-direction: column;
+      row-gap: 20px;
+    }
+  }
+  
+  
+  #myChart {
+    width: 900px;
+    max-height: 600px;
+  }
+  
+  .small-chart {
+    max-width: 300px;
+    max-height: 200px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  a,
+  a:visited,
+  a:hover {
+    color: #1976d2;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    color: #125699;
+  }
+  
+  footer {
+    margin-top: 8px;
+    align-items: center;
+    line-height: 20px;
+  }
+  
+  footer a {
+    display: flex;
+    align-items: center;
+  }
+  
+  .schedule-navbar {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    height: 60px;
+    overflow: hidden;
+    flex-direction: row;
+    display: flex;
+    justify-content: center;
+    background-color: rgb(183, 183, 183);
+    overflow-x: auto;
+    font-weight: 600;
+    border: 3px solid #363738;
+    border-radius: 0px;
+    z-index: -1;
+    .button {
+      all: unset;
+      background-color: inherit;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease-in-out;
+      line-height: 24px;
+      .team-name {
+        white-space: nowrap;
+      }
+      .team-name::after {
+        content: '\A'; /* Insert a line break after team names */
+        white-space: pre; /* Preserve the line break */
+      }
+    }
+  }
+  
+  .active {
+    background-color: rgb(127, 127, 127, 1);
+  }
+  /* The switch - the box around the slider */
+  .switch {
+    position: relative;
+    display: inline-block;
+    height: inherit;
+    width: 200px;
+    height: inherit;
+    :hover {
+      cursor: pointer;
+    }
+    .slider {
+      position: relative;
+      height: 40px;
+      width: 200px;
+      cursor: pointer;
+      background-color: #5d8ead;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+    .label {
+      position: absolute;
+      top: 11px;
+      left: 32px;
+      display: block;
+      text-align: center;
+    }
+    .slider:after {
+      position: absolute;
+      content: "";
+      height: 30px;
+      left: 0;
+      width: 90px;
+      background-color: rgb(255, 255, 255, 0.5);
+      -webkit-transition: .4s;
+      transition: .4s;
+      border: 5px solid rgb(19, 35, 85);
+    }
+  }
+  
+  /* Hide default HTML checkbox */
+  .switch input {
+    display: none;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  input:checked + .slider:after {
+    -webkit-transform: translateX(100px);
+    -ms-transform: translateX(100px);
+    transform: translateX(100px);
+  }
+  
+  .slider {
+    position: relative;
+    width: 900px;
+    height: 15px;
+    border-radius: 5px;  
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%; 
+    background: #04AA6D;
+    cursor: pointer;
+  
+  }
+  .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #04AA6D;
+    cursor: pointer;
+  }
+  .button-container .button[disabled] {
+    :disabled {
+      pointer-events: none;
+    }
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  @media (hover: hover) {
+    .button:hover {
+      cursor: pointer;
+    }
+    .button:hover :not(.large-icon){
+      cursor: pointer;
+      transform: scale(110%);
+    }
+    .button:hover .large-icon {
+      font-size: 26px;
+    }
+    .button-container:hover .button:not(:hover){
+      opacity: 70%;
+    }
+    .schedule-navbar:hover .button:hover {
+      cursor: pointer;
+    }
+    .schedule-navbar:hover .button:not(:hover) {
+      opacity: 0.7;
+    }
+    .teams-dropdown:hover .teams-dropdown-content, .stats-dropdown:hover .stats-dropdown-content {
+      display: block;
+    }
+    .stats-dropdown-content .button:hover,  .teams-dropdown-content  .button:hover {
+      background-color: rgb(127, 127, 127, 0.2);
+    }
+    .stats-dropdown-content .button:active,  .teams-dropdown-content  .button:active {
+      background-color: rgb(127, 127, 127, 1);
+    }
+  }
