@@ -204,7 +204,6 @@ def scraper2021(event, context):
         return teams
     
     def updateWinsLosses(team, isWin):
-    
         if isWin==True:
             team["wins"].append(team["wins"][-1] + 1)
             team["losses"].append(team["losses"][-1])
@@ -251,7 +250,9 @@ def scraper2021(event, context):
                     "runsAllowed": [otherTeamScore],
                     "wins": [0],
                     "losses": [0],
-                    "netRecord": [0]
+                    "netRecord": [0],
+                    "pitchingStats": {},
+                    "battingStats": {}
                 }
 
         if awayTeamScore > homeTeamScore:
@@ -263,31 +264,24 @@ def scraper2021(event, context):
 
     pitchingStats="https://www.baseball-reference.com/leagues/majors/2021-standard-pitching.shtml"
     battingStats="https://www.baseball-reference.com/leagues/majors/2021-standard-batting.shtml"
-    webpage=BeautifulSoup(requests.get(battingStats).content, "html.parser")
-    dataTable=webpage.find("tbody")
+    statNames={"pitchingStats": [], "battingStats": []}
+    for statCategory, categoryLabel in zip([pitchingStats, battingStats], ["pitchingStats", "battingStats"]):
+        webpage=BeautifulSoup(requests.get(statCategory).content, "html.parser")
+        dataTable=webpage.find("tbody")
+        dataStats=webpage.find("thead")
+        
+        for column in dataStats.find_all("th"):
+            if "Tm" in column:
+                continue
+            statNames[categoryLabel].append(column.text.strip())
 
-    dataStats=webpage.find("thead")
-    statNames=[]
-    for column in dataStats.find_all("th"):
-        if "Tm" in column:
-            continue
-        statNames.append(column.text.strip())
+        for row in dataTable.find_all("tr"):
+            teamName=row.find("th").text.strip()
+            for cell, statName in zip(row.find_all("td")[0:], statNames[categoryLabel]):
+                stat=cell.text.strip()
+                if teamName in teams:
+                    teams[teamName][categoryLabel][statName]=float(stat)
 
-    for row in dataTable.find_all("tr"):
-        teamName=row.find("th").text.strip()
-
-        stats=[]  # Initialize the stats list here, outside the loop
-        for cell, statName in zip(row.find_all("td")[0:], statNames):
-            stat=cell.text.strip()
-            stats.append(float(stat))
-
-        if teamName in teams:
-            teams[teamName]["stats"]=stats
-        else:
-            teams[teamName]={
-                "name": teamName,
-                "stats": stats
-            }
 
     updateTeams()
     return teams, statNames

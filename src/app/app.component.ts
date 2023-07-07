@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy,  NgZone, ChangeDetectorRef, ComponentFactoryResolver} from '@angular/core';
-import { HttpClient, HttpContext } from '@angular/common/http';
-import { Chart, TimeScale } from 'chart.js/auto';
+import { Component, OnInit, OnDestroy,  NgZone, ChangeDetectorRef} from '@angular/core';
+import { HttpClient} from '@angular/common/http';
+import { Chart } from 'chart.js/auto';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Observable } from 'rxjs';
 
@@ -11,49 +11,27 @@ import { Observable } from 'rxjs';
 })
 
 /* Goals 
-
-1. Hovering over point on line chart shows each teams record at that time
 2. Hovering over bar charts indicates each teams respective rank for that stat
 3. Add pitching stats
 4. If no teams are active then all charts disappear (preserve stats chosen)
-5. Slider to allow user to display specific portions of schedule
 */
 
 export class AppComponent implements OnInit, OnDestroy{
-
+  constructor(private httpclient: HttpClient, private ngZone: NgZone, private cdr: ChangeDetectorRef) {
+  }
   title='baseball_scraper_app';
-  awayData: any;
-  homeData: any;
-  teamData: any;
-  isButtonClicked=false;
+  
   displayStatOptions=false;
   displaySlider=false;
   pageLoaded=false;
+  
   activeButtons={
+    "Divisions": {} as { [key: string]: boolean },
     "Teams": {} as { [key: string]: boolean },
-    "Stats": {} as { [key: string]: boolean },
+    "pitchingStats": {} as { [key: string]: boolean },
+    "battingStats": {} as { [key: string]: boolean },
     "Years": {} as { [key: string]: boolean }
   };
-  highlightedDivisions: { [key: string]: boolean }={};
-  team1: any;
-  team2: any;
-  allTeamsData: any;
-  yearsData: {
-    [year: string]: any;}={
-      "2021": {},
-      "2022": {}
-    };
-  currentYearData: any;
-  teamNames: any;
-  chart: any;
-  chartData: any;
-  activeTeams: any[]=[];
-  activeStats: any[]=[];
-  activeYear: any;
-  scheduleData: any[]=[];
-  teamStatistics: any[]=[];
-  sliderValue: any;
-  pointRadius=4;
   divisions={
     "AmericanLeague": {
       "East": [
@@ -101,14 +79,35 @@ export class AppComponent implements OnInit, OnDestroy{
         "San Francisco Giants"
       ]
     }
-  }
+  };
+  yearsData: {[year: string]: any;}={
+      "2021": {},
+      "2022": {}
+    };
+  
+  chart: any;
+  chartData: any;
+  activeYear: any;
+  currentYearData: any;
+  teamNames: any;
+  activeTeams: any[]=[];
+  activeStats: { pitchingStats: { [key: string]: boolean }; battingStats: { [key: string]: boolean }; } = {
+    pitchingStats: {},
+    battingStats: {}
+  };
+  battingStats: any[]=[];
+  pitchingStats: any[]=[];
+  maxSliderValue: any;
+  pointRadius=4;
 
-  constructor(private httpclient: HttpClient, private ngZone: NgZone, private cdr: ChangeDetectorRef) {
-  }
   ngOnInit(): void {
     this.fetch2021Schedule().subscribe(([teamData, statNames]) => {
       this.yearsData["2021"]=teamData
-      this.teamStatistics=statNames;
+      this.pitchingStats=statNames.pitchingStats;
+      this.battingStats=statNames.battingStats;
+      console.log("pitching stat names:", this.pitchingStats)
+      console.log("batting stat names:", this.battingStats)
+      console.log("2020",teamData)
     });
     this.fetch2022Schedule().subscribe(([teamData, statNames]) => {
       this.yearsData["2022"]=teamData
@@ -117,8 +116,6 @@ export class AppComponent implements OnInit, OnDestroy{
       this.activeYear="2022"
       this.currentYearData=this.yearsData[this.activeYear]
     });
-    
-    
   }
   ngOnDestroy(): void {
     this.destroyChart()
@@ -139,7 +136,6 @@ export class AppComponent implements OnInit, OnDestroy{
       observer.complete();
     })})
   }
-
   getCheckboxStatus(): void {
     const checkbox=document.getElementById("myCheckbox");
     if (checkbox instanceof HTMLInputElement) {
@@ -154,79 +150,90 @@ export class AppComponent implements OnInit, OnDestroy{
       this.activeTeams=[];
       this.currentYearData=this.yearsData[this.activeYear]
     }
-    console.log("active buttons", this.activeButtons)
-    console.log("active teams", this.activeTeams)
   }
-  toggleButton(target: EventTarget | null, subclass: "Teams" | "Stats"): void {
+
+  toggleButton(target: EventTarget | null, subclass: "Divisions"| "Teams" | "pitchingStats"| "battingStats"): void {
     if (target instanceof HTMLElement) {
-      const buttonId=target.id;
-      this.activeButtons[subclass][buttonId]=!this.activeButtons[subclass]?.[buttonId];
+
       if (subclass==="Teams") {
-        const buttonContainer=document.querySelector(".teams-dropdown-content")
-        const buttons=buttonContainer?.querySelectorAll("button") 
-        buttons?.forEach((button) => {
-          const team=this.currentYearData[button.id];
-          if (this.activeButtons[subclass][button.id]) {
-            if (!this.activeTeams.includes(team)) {
-              this.activeTeams.push(team);
-              if (this.activeButtons[subclass][buttonId]===true){
-                this.addLine()
-              } else if (this.activeButtons[subclass][buttonId]===false){
-                this.removeLine()
-              }
-            }
-          } else {
-            const index=this.activeTeams.indexOf(team);
-            if (index !== -1) {
-              this.activeTeams.splice(index, 1);
-              this.removeLine()
-            }
-          }
-        });
-      } else if (subclass==='Stats') {
-        const buttonContainer=document.querySelector(".stats-dropdown-content")
-        const buttons=buttonContainer?.querySelectorAll("button") 
-        
-        buttons?.forEach((button) => {
-          if (this.activeButtons[subclass][button.id]) {
-            if (!this.activeStats.includes(button.id)) {
-              this.activeStats.push(button.id);
-              this.ngZone.run(() => {
-                this.cdr.detectChanges();
-                this.generateBarCharts(button.id);
-              });
-            }
-          } else {
-            const index=this.activeStats.indexOf(button.id);
-            if (index !== -1) {
-              this.activeStats.splice(index, 1);
-              this.removeSmallChart(button.id);
-            }
-          }
-        });
+        const buttonId=target.id;
+        this.activeButtons[subclass][buttonId]=!this.activeButtons[subclass]?.[buttonId];
+        this.handleTeams()
+      } else if (subclass==="pitchingStats" || subclass==="battingStats") {
+        if (target.parentElement){
+          const buttonId=target.id;
+          this.activeButtons[subclass][buttonId]=!this.activeButtons[subclass]?.[buttonId];
+          this.handleStats(subclass)
+        }
       }
-  }
+      if (subclass==="Divisions") {
+        if (target.parentElement){
+          const divisionId=target.parentElement.id
+          this.activeButtons[subclass][divisionId]=!this.activeButtons[subclass]?.[divisionId];
+          this.handleDivision(divisionId)
+        }
+      }
+    }
   this.updateCharts()
   }
-  highlightDivision(divisionId: string): void {
-    const buttonContainer=document.querySelector(`.teams-dropdown-subheader#${divisionId}`)
+  handleTeams(): void {
+    const buttonContainer=document.querySelector(".teams-dropdown-content")
+    const buttons=buttonContainer?.querySelectorAll("button") 
+    buttons?.forEach((button) => {
+      const team=this.currentYearData[button.id];
+      if (this.activeButtons["Teams"][button.id] && !this.activeTeams.includes(team)) {
+          this.activeTeams.push(team);
+          this.addLine()
+      } else if (!this.activeButtons["Teams"][button.id] && this.activeTeams.includes(team)) {
+          const index=this.activeTeams.indexOf(team);
+          if (index !== -1) {
+            this.activeTeams.splice(index, 1);
+            this.removeLine()
+        }
+      }
+    });
+    console.log("handle teams", this.activeTeams)
+  }
+  handleStats(statCategory: "pitchingStats"| "battingStats"): void {
+    const buttonContainer=document.querySelector(`.stats-dropdown-content#${statCategory}`)
     const buttons=buttonContainer?.querySelectorAll("button")
     
-    if (!this.highlightedDivisions[divisionId]) {
-      buttons?.forEach((button) => {
-        if (button.id){
-          this.activeButtons['Teams'][button.id]=false;
-          this.toggleButton(button, "Teams");
+    buttons?.forEach((button) => {
+      if (this.activeButtons[statCategory][button.id]) {
+        if (!this.activeStats[statCategory][button.id]) {
+          this.activeStats[statCategory][button.id]=!this.activeStats[statCategory][button.id]
+          this.ngZone.run(() => {
+            this.cdr.detectChanges();
+            this.generateBarCharts(statCategory, button.id);
+          });
+        }
+      } else {
+        delete this.activeStats[statCategory][button.id];
+        this.removeSmallChart(button.id);
         }
       });
-      this.highlightedDivisions[divisionId]=true;
+
+    console.log("current active stats", this.activeStats)
+    console.log("current active buttons", this.activeButtons)
+  }
+  handleDivision(divisionId: string): void {
+    const buttonContainer=document.querySelector(`.teams-dropdown-subheader#${divisionId}`)
+    const buttons=buttonContainer?.querySelectorAll("button")
+    if (this.activeButtons["Divisions"][divisionId]) {
+      buttons?.forEach((button) => {
+        if (button.id){
+          this.activeButtons['Teams'][button.id]=true;
+          this.handleTeams()
+        }
+      });
     } else {
       buttons?.forEach((button) => {
         if (button.id){
-          this.toggleButton(button, "Teams");
+          this.activeButtons['Teams'][button.id]=false;
+          this.handleTeams()
         }
       });
-      this.highlightedDivisions[divisionId]=false;
+      this.activeButtons["Divisions"][divisionId]=false;
     }
   }
   switchStatus(event: Event): void {
@@ -236,6 +243,7 @@ export class AppComponent implements OnInit, OnDestroy{
     this.destroyChart();
     this.displayStatOptions=true;
     this.displaySlider=true;
+
     const canvas: any=document.getElementById("myChart");
     const increment=1;
     let maxGames: any;
@@ -246,10 +254,10 @@ export class AppComponent implements OnInit, OnDestroy{
       pointStyle="triangle";
     } 
     
-    if (!this.sliderValue) {
+    if (!this.maxSliderValue) {
       maxGames=162;
     } else {
-      maxGames=this.sliderValue;
+      maxGames=this.maxSliderValue;
     }
     const labels=Array.from({length: Math.ceil(maxGames / increment) }, (_, index) => (index * increment).toString());
     
@@ -311,8 +319,6 @@ export class AppComponent implements OnInit, OnDestroy{
                       losses+=1;
                     }
                   }
-        
-                  // Append total wins and losses to the label
                   label+=`${wins}-${losses}`;
                 }
                 return label;
@@ -329,23 +335,24 @@ export class AppComponent implements OnInit, OnDestroy{
       }
     });
   }
-  generateBarCharts(stat: string): void {
-    const canvas: any=document.getElementById(stat+"Chart")
-    let statIndex=this.teamStatistics.indexOf(stat)
+  generateBarCharts(statCategory: "pitchingStats"| "battingStats", stat: string): void {
+    const canvas: any=document.getElementById(statCategory+ "-" + stat +"-Chart")
+    console.log(canvas)
+    console.log("active stats when entering bar chart function: ", this.activeStats)
+    console.log(this.activeTeams)
     const chartData={
       labels: ["Teams"],
       datasets: [
         ...this.activeTeams.map((team, index) => ({
-          
           label: team.name,
-          data: [team.stats[statIndex]],
+          data: [team[statCategory][stat]],
           backgroundColor: team.mainColor,
           borderColor: team.secondaryColor,
           borderWidth: 2
         }))
       ]
     };
-
+    console.log(chartData)
     new Chart(canvas, {
       type: 'bar',
       data: chartData,
@@ -403,34 +410,36 @@ export class AppComponent implements OnInit, OnDestroy{
     });
   }
   updateCharts(): void {
-    this.activeStats.forEach((stat) => {
-      const canvas: any=document.getElementById(stat + "Chart");
-      const existingChart=Chart.getChart(canvas);
-      if (existingChart) {
-        existingChart.destroy();
-      }
-      this.generateBarCharts(stat)
-    });
+    // this.activeStats.forEach((stat) => {
+    //   const canvas: any=document.getElementById(stat + "Chart");
+    //   const existingChart=Chart.getChart(canvas);
+    //   if (existingChart) {
+    //     existingChart.destroy();
+    //   }
+    //   this.generateBarCharts(stat)
+    // });
   }
   updateSliderValue(): void {
-    const slider=document.getElementById("mySlider") as HTMLInputElement;
-    this.sliderValue=slider.value
+    const maxSlider=document.getElementById("maxSlider") as HTMLInputElement;
+    this.maxSliderValue=maxSlider.value
     this.generateChart()
   }
   resetTeamsandChart(keepStats: boolean): void {
     this.displayStatOptions=keepStats;
     this.displaySlider=false;
     this.activeButtons={
+      "Divisions": {} as { [key: string]: boolean },
       "Teams": {} as { [key: string]: boolean },
-      "Stats": {} as { [key: string]: boolean },
+      "pitchingStats": {} as { [key: string]: boolean },
+      "battingStats": {} as { [key: string]: boolean },
       "Years": {} as { [key: string]: boolean }
     };
     this.activeTeams=[];
-    for (let stat of this.activeStats) {
-      this.removeSmallChart(stat)
-    };
+    // for (let stat of this.activeStats) {
+    //   this.removeSmallChart(stat)
+    // };
     
-    this.activeStats=[];
+    // this.activeStats=[];
     this.destroyChart();
   }
   addLine(): void {
@@ -460,7 +469,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
   removeLine(): void {
     this.chartData.datasets=this.chartData.datasets.filter((dataset: any) => {
-      if (!this.activeTeams.some((team: any) => team.name===dataset.label)) {
+      if (!this.activeTeams.some((team: any) => team.name+ ` (${this.activeYear})`===dataset.label)) {
         return false;
       }
       return true; 

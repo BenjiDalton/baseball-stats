@@ -3,6 +3,7 @@
 <div class="toolbar" role="banner">
   <a routerLink="/" class="button" (click)="resetTeamsandChart(false)"><i class="fa fa-home large-icon"></i></a>
   <a routerLink="/schedule" class="button" (click)="switchStatus($event)"><i class="fa fa-calendar large-icon"></i></a>
+  
   <div class="button-container" *ngIf="pageLoaded">
     <label class="switch">
       <input type="checkbox" id="myCheckbox" (click)="getCheckboxStatus()" checked>
@@ -16,19 +17,19 @@
         <div class="teams-dropdown-league">American League</div>
         <div class="teams-dropdown-column">
           <div class="teams-dropdown-subheader" id="AmericanLeagueEast">
-            <button class="button" style="color: black; font-size:large" (click)="highlightDivision('AmericanLeagueEast')">East</button>
+            <button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">East</button>
             <button class="button" *ngFor="let team of divisions['AmericanLeague'].East" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
                 {{ team }}
             </button>
           </div>
           <div class="teams-dropdown-subheader" id="AmericanLeagueCentral">
-            <button class="button" style="color: black; font-size:large" (click)="highlightDivision('AmericanLeagueCentral')">Central</button>
+            <button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">Central</button>
             <button class="button" *ngFor="let team of divisions['AmericanLeague'].Central" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
               {{ team }}
             </button>
           </div>
           <div class="teams-dropdown-subheader" id="AmericanLeagueWest" >
-            <button class="button" style="color: black; font-size:large"(click)="highlightDivision('AmericanLeagueWest')">West</button>
+            <button class="button" style="color: black; font-size:large"(click)="toggleButton($event.target, 'Divisions')">West</button>
             <button class="button" *ngFor="let team of divisions['AmericanLeague'].West" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
               {{ team }}
             </button>
@@ -37,19 +38,19 @@
         <div class="teams-dropdown-league">National League</div>
         <div class="teams-dropdown-column">
           <div class="teams-dropdown-subheader" id="NationalLeagueEast">
-            <button class="button" style="color: black; font-size:large" (click)="highlightDivision('NationalLeagueEast')">East</button>
+            <button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">East</button>
             <button class="button" *ngFor="let team of divisions['NationalLeague'].East" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
               {{ team }}
             </button>
           </div>
           <div class="teams-dropdown-subheader" id="NationalLeagueCentral">
-            <button class="button" style="color: black; font-size:large" (click)="highlightDivision('NationalLeagueCentral')">Central</button>
+            <button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">Central</button>
             <button class="button" *ngFor="let team of divisions['NationalLeague'].Central" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
               {{ team }}
             </button>
           </div>
           <div class="teams-dropdown-subheader" id="NationalLeagueWest">
-            <button class="button" style="color: black; font-size:large" (click)="highlightDivision('NationalLeagueWest')">West</button>
+            <button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">West</button>
             <button class="button" *ngFor="let team of divisions['NationalLeague'].West" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
               {{ team }}
             </button>
@@ -57,11 +58,19 @@
         </div>
       </div>
     </div>
-  
+
     <div *ngIf="displayStatOptions" class="stats-dropdown">
-      <button class="button" tabindex="0"><span>Add Comparisons</span></button>
-      <div class="stats-dropdown-content">
-        <button *ngFor="let stat of teamStatistics" class="button" (click)="toggleButton($event.target, 'Stats')" [class.active]="activeButtons['Stats'][stat]" tabindex="0" [id]="stat">
+      <button class="button" tabindex="0"><span>Batting Stats</span></button>
+      <div class="stats-dropdown-content"id="battingStats">
+        <button *ngFor="let stat of battingStats" class="button" (click)="toggleButton($event.target, 'battingStats')" [class.active]="activeButtons['battingStats'][stat]" tabindex="0" [id]="stat">
+          {{ stat }}
+        </button>
+      </div>
+    </div>
+    <div *ngIf="displayStatOptions" class="stats-dropdown">
+      <button class="button" tabindex="0"><span>Pitching Stats</span></button>
+      <div class="stats-dropdown-content" id="pitchingStats">
+        <button *ngFor="let stat of pitchingStats" class="button" (click)="toggleButton($event.target, 'pitchingStats')" [class.active]="activeButtons['pitchingStats'][stat]" tabindex="0" [id]="stat">
           {{ stat }}
         </button>
       </div>
@@ -83,15 +92,20 @@
     <div>
       <canvas id="myChart"></canvas>
     </div>
-    <div *ngIf="displaySlider" class="slidecontainer">
-      <input type="range" min="1" max="162" value="162" class="slider" id="mySlider" (input)="updateSliderValue()">
+    <div *ngIf="displaySlider" class="chart-slider-container">
+      <input type="range" min="1" max="162" value="162" class="chart-slider" id="maxSlider" (input)="updateSliderValue()">
     </div>
   </div>
   <div class="side-section">
     <div class="small-chart">
-      <ng-container *ngFor="let stat of activeStats">
-        <canvas [id]="stat + 'Chart'" class="smallChart"></canvas>
+      <ng-container *ngFor="let item of activeStats['pitchingStats']|keyvalue">
+        <canvas [id]="'pitchingStats-'+ item.key + '-Chart'" class="smallChart"></canvas>
       </ng-container>
-
+      <ng-container *ngFor="let item of activeStats['battingStats']|keyvalue">
+        <canvas [id]="'battingStats-'+ item.key + '-Chart'" class="smallChart"></canvas>
+      </ng-container>
     </div>
+    
+    
   </div>
+</div>
