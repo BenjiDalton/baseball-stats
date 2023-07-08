@@ -81,8 +81,16 @@ export class AppComponent implements OnInit, OnDestroy{
     }
   };
   yearsData: {[year: string]: any;}={
-      "2021": {},
-      "2022": {}
+      "2021": {
+        "Teams": {},
+        "battingStats": {},
+        "pitchingStats": {}
+      },
+      "2022": {
+        "Teams": {},
+        "battingStats": {},
+        "pitchingStats": {}
+      }
     };
   
   chart: any;
@@ -102,15 +110,15 @@ export class AppComponent implements OnInit, OnDestroy{
 
   ngOnInit(): void {
     this.fetch2021Schedule().subscribe(([teamData, statNames]) => {
-      this.yearsData["2021"]=teamData
-      this.pitchingStats=statNames.pitchingStats;
-      this.battingStats=statNames.battingStats;
-      console.log("pitching stat names:", this.pitchingStats)
-      console.log("batting stat names:", this.battingStats)
-      console.log("2020",teamData)
+      this.yearsData["2021"]["Teams"]=teamData;
+      this.yearsData["2021"]["battingStats"]=statNames.battingStats;
+      this.yearsData["2021"]["pitchingStats"]=statNames.pitchingStats;
     });
     this.fetch2022Schedule().subscribe(([teamData, statNames]) => {
-      this.yearsData["2022"]=teamData
+      this.yearsData["2022"]["Teams"]=teamData;
+      this.yearsData["2022"]["battingStats"]=statNames.battingStats;
+      this.yearsData["2022"]["pitchingStats"]=statNames.pitchingStats;
+      console.log(this.yearsData)
       this.teamNames=Object.keys(teamData);
       this.pageLoaded=true;
       this.activeYear="2022"

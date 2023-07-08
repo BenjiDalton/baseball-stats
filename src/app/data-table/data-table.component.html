@@ -1,0 +1,21 @@
+<table>
+    <thead>
+      <tr>
+        <th>
+            Team
+        </th>
+        <ng-container *ngFor="let item of yearsData['2022']['pitchingStats']">
+            <th>{{ item }}</th>
+          </ng-container>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Data 1</td>
+        <td>Data 2</td>
+        <td>Data 3</td>
+      </tr>
+      <!-- Repeat the above row structure for each row of data -->
+    </tbody>
+  </table>
+  

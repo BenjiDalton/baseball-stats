@@ -89,6 +89,9 @@
 
 <div class="content" role="main">
   <div class="main-section">
+    <app-data-table *ngIf="pageLoaded"
+      [yearsData]="yearsData"
+    ></app-data-table>
     <div>
       <canvas id="myChart"></canvas>
     </div>
