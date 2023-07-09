@@ -62,7 +62,7 @@
 		<div *ngIf="displayStatOptions" class="stats-dropdown">
 			<button class="button" tabindex="0"><span>Batting Stats</span></button>
 			<div class="stats-dropdown-content"id="battingStats">
-				<button *ngFor="let stat of battingStats" class="button" (click)="toggleButton($event.target, 'battingStats')" [class.active]="activeButtons['battingStats'][stat]" tabindex="0" [id]="stat">
+				<button *ngFor="let stat of this.yearsData[activeYear]['battingStats']" class="button" (click)="toggleButton($event.target, 'battingStats')" [class.active]="activeButtons['battingStats'][stat]" tabindex="0" [id]="stat">
 					{{ stat }}
 				</button>
 			</div>
@@ -70,11 +70,12 @@
 		<div *ngIf="displayStatOptions" class="stats-dropdown">
 			<button class="button" tabindex="0"><span>Pitching Stats</span></button>
 			<div class="stats-dropdown-content" id="pitchingStats">
-				<button *ngFor="let stat of pitchingStats" class="button" (click)="toggleButton($event.target, 'pitchingStats')" [class.active]="activeButtons['pitchingStats'][stat]" tabindex="0" [id]="stat">
+				<button *ngFor="let stat of this.yearsData[activeYear]['pitchingStats']" class="button" (click)="toggleButton($event.target, 'pitchingStats')" [class.active]="activeButtons['pitchingStats'][stat]" tabindex="0" [id]="stat">
 					{{ stat }}
 				</button>
 			</div>
 		</div>
+		<div class="button" (click)="toggleTable()" tabindex="0"><span>Show Table</span></div>
 		<div *ngIf="displayStatOptions" class="button" (click)="resetTeamsandChart(false)" tabindex="0"><span>Reset</span></div>
 	</div>
 	<div class="spacer"></div>
@@ -86,10 +87,11 @@
 			/>
 		</a>
 </div>
-<app-data-table *ngIf="pageLoaded" 
+<app-data-table *ngIf="displayTable" 
 	[yearsData]="yearsData" 
 	[activeYear]="activeYear"
-	[entireMLB]="entireMLB">
+	[entireMLB]="entireMLB"
+	[currentYearData]="currentYearData">
 </app-data-table>
 <div class="content" role="main">
 	<div class="main-section">
