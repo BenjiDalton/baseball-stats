@@ -32,7 +32,7 @@ export class AppComponent implements OnInit, OnDestroy{
     "battingStats": {} as { [key: string]: boolean },
     "Years": {} as { [key: string]: boolean }
   };
-  divisions={
+  entireMLB={
     "AmericanLeague": {
       "East": [
         "Baltimore Orioles",
@@ -118,11 +118,10 @@ export class AppComponent implements OnInit, OnDestroy{
       this.yearsData["2022"]["Teams"]=teamData;
       this.yearsData["2022"]["battingStats"]=statNames.battingStats;
       this.yearsData["2022"]["pitchingStats"]=statNames.pitchingStats;
-      console.log(this.yearsData)
       this.teamNames=Object.keys(teamData);
       this.pageLoaded=true;
-      this.activeYear="2022"
-      this.currentYearData=this.yearsData[this.activeYear]
+      this.activeYear="2022";
+      this.currentYearData=this.yearsData[this.activeYear];
     });
   }
   ngOnDestroy(): void {
@@ -160,23 +159,24 @@ export class AppComponent implements OnInit, OnDestroy{
     }
   }
 
-  toggleButton(target: EventTarget | null, subclass: "Divisions"| "Teams" | "pitchingStats"| "battingStats"): void {
-    if (target instanceof HTMLElement) {
+  toggleButton(eventTarget: EventTarget | null, subclass: "Divisions"| "Teams" | "pitchingStats"| "battingStats"): void {
+    if (eventTarget instanceof HTMLElement) {
 
       if (subclass==="Teams") {
-        const buttonId=target.id;
+        const buttonId=eventTarget.id;
         this.activeButtons[subclass][buttonId]=!this.activeButtons[subclass]?.[buttonId];
+        console.log("Active buttons when subclass == team", this.activeButtons)
         this.handleTeams()
       } else if (subclass==="pitchingStats" || subclass==="battingStats") {
-        if (target.parentElement){
-          const buttonId=target.id;
+        if (eventTarget.parentElement){
+          const buttonId=eventTarget.id;
           this.activeButtons[subclass][buttonId]=!this.activeButtons[subclass]?.[buttonId];
           this.handleStats(subclass)
         }
       }
       if (subclass==="Divisions") {
-        if (target.parentElement){
-          const divisionId=target.parentElement.id
+        if (eventTarget.parentElement){
+          const divisionId=eventTarget.parentElement.id
           this.activeButtons[subclass][divisionId]=!this.activeButtons[subclass]?.[divisionId];
           this.handleDivision(divisionId)
         }
@@ -188,7 +188,8 @@ export class AppComponent implements OnInit, OnDestroy{
     const buttonContainer=document.querySelector(".teams-dropdown-content")
     const buttons=buttonContainer?.querySelectorAll("button") 
     buttons?.forEach((button) => {
-      const team=this.currentYearData[button.id];
+      const team=this.currentYearData['Teams'][button.id];
+      console.log("team: ", team)
       if (this.activeButtons["Teams"][button.id] && !this.activeTeams.includes(team)) {
           this.activeTeams.push(team);
           this.addLine()
@@ -251,7 +252,6 @@ export class AppComponent implements OnInit, OnDestroy{
     this.destroyChart();
     this.displayStatOptions=true;
     this.displaySlider=true;
-
     const canvas: any=document.getElementById("myChart");
     const increment=1;
     let maxGames: any;

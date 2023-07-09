@@ -1,21 +1,45 @@
-<table>
-    <thead>
-      <tr>
-        <th>
-            Team
-        </th>
-        <ng-container *ngFor="let item of yearsData['2022']['pitchingStats']">
-            <th>{{ item }}</th>
-          </ng-container>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Data 1</td>
-        <td>Data 2</td>
-        <td>Data 3</td>
-      </tr>
-      <!-- Repeat the above row structure for each row of data -->
-    </tbody>
-  </table>
+<div class="content" role="main">
+    <div class="table-options-container">
+        <select name="leagueSelect" id="leagueSelect" (change)="getLeague($event.target)">
+            <option value="MLB">Entire MLB</option>
+            <option value="AmericanLeague">American League</option>
+            <option value="NationalLeague">National League</option>
+        </select>
+        <select *ngIf="this.selectedLeague" name="divisonSelect" id="divisionSelect" (change)="getDivision($event.target)">
+            <option value="entireDivision">Entire Divison</option>
+            <option value="East">East</option>
+            <option value="Central">Central</option>
+            <option value="West">West</option>
+        </select>
+        <select name="statsCategorySelect" id="statsCategorySelect" (change)="getStatsCategory($event.target)">
+            <option value="pitchingStats">Pitching Stats</option>
+            <option value="battingStats">Batting Stats</option>
+        </select>
+    </div>
+    <div *ngIf="tableData">
+        <table>
+            <thead>
+              <tr>
+                <th>Team</th>
+                <ng-container *ngFor="let item of tableData[selectedStatsCategory]">
+                  <th>{{ item }}</th>
+                </ng-container>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let team of tableData['Teams'] | keyvalue">
+                <td>{{ team.key }}</td>
+                <ng-container *ngFor="let item of getStatsForTeam(team.key)">
+                  <td>{{ item }}</td>
+                </ng-container>
+              </tr>
+            </tbody>
+          </table>
+    </div>
+<div>
+    
+
+
+
+
   
