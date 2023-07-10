@@ -1,5 +1,7 @@
 # BaseballStats
 
+Demonstration of the app:
+https://youtu.be/RCzBarq1_e0
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.3.
 
