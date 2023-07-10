@@ -95,7 +95,6 @@
 </app-data-table>
 <div class="content" role="main">
 	<div class="main-section">
-		
 		<div>
 			<canvas id="myChart"></canvas>
 		</div>
@@ -105,11 +104,19 @@
 	</div>
 	<div class="side-section">
 		<div class="small-chart">
-			<ng-container *ngFor="let item of activeStats['pitchingStats']|keyvalue">
-				<canvas [id]="'pitchingStats-'+ item.key + '-Chart'" class="smallChart"></canvas>
+			<ng-container *ngFor="let stat of activeStats['pitchingStats']|keyvalue">
+				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
 			</ng-container>
-			<ng-container *ngFor="let item of activeStats['battingStats']|keyvalue">
-				<canvas [id]="'battingStats-'+ item.key + '-Chart'" class="smallChart"></canvas>
+			<!-- <ng-container *ngFor="let stat of activeStats['battingStats']|keyvalue">
+				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
+			</ng-container> -->
+		</div>
+		<div class="small-chart">
+			<!-- <ng-container *ngFor="let stat of activeStats['pitchingStats']|keyvalue">
+				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
+			</ng-container> -->
+			<ng-container *ngFor="let stat of activeStats['battingStats']|keyvalue">
+				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
 			</ng-container>
 		</div>
 		

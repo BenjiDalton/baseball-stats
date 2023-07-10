@@ -100,7 +100,7 @@ export class AppComponent implements OnInit, OnDestroy{
 	currentYearData: any;
 	teamNames: any;
 	activeTeams: any[]=[];
-	activeStats: { pitchingStats: { [key: string]: boolean }; battingStats: { [key: string]: boolean }; } = {
+	activeStats: any = {
 		pitchingStats: {},
 		battingStats: {}
 	};
@@ -183,7 +183,7 @@ export class AppComponent implements OnInit, OnDestroy{
 				}
 			}
 		}
-	this.updateCharts()
+	this.generateBarCharts()
 	}
 	handleTeams(): void {
 		const buttonContainer=document.querySelector(".teams-dropdown-content")
@@ -211,19 +211,13 @@ export class AppComponent implements OnInit, OnDestroy{
 			if (this.activeButtons[statCategory][button.id]) {
 				if (!this.activeStats[statCategory][button.id]) {
 					this.activeStats[statCategory][button.id]=!this.activeStats[statCategory][button.id]
-					this.ngZone.run(() => {
-						this.cdr.detectChanges();
-						this.generateBarCharts(statCategory, button.id);
-					});
+					this.detectChanges()
 				}
 			} else {
 				delete this.activeStats[statCategory][button.id];
-				this.removeSmallChart(button.id);
 				}
 			});
-
-		console.log("current active stats", this.activeStats)
-		console.log("current active buttons", this.activeButtons)
+		this.generateBarCharts()
 	}
 	handleDivision(divisionId: string): void {
 		const buttonContainer=document.querySelector(`.teams-dropdown-subheader#${divisionId}`)
@@ -336,6 +330,10 @@ export class AppComponent implements OnInit, OnDestroy{
 					legend: {
 						position: 'top',
 						labels: {
+							font: {
+								size: 14,
+								weight: 'bold'
+							},
 							usePointStyle: true
 						}
 					}
@@ -343,89 +341,96 @@ export class AppComponent implements OnInit, OnDestroy{
 			}
 		});
 	}
-	generateBarCharts(statCategory: "pitchingStats"| "battingStats", stat: string): void {
-		const canvas: any=document.getElementById(statCategory+ "-" + stat +"-Chart")
-		console.log(canvas)
-		console.log("active stats when entering bar chart function: ", this.activeStats)
-		console.log(this.activeTeams)
-		const chartData={
-			labels: ["Teams"],
-			datasets: [
-				...this.activeTeams.map((team, index) => ({
-					label: team.name,
-					data: [team[statCategory][stat]],
-					backgroundColor: team.mainColor,
-					borderColor: team.secondaryColor,
-					borderWidth: 2
-				}))
-			]
-		};
-		console.log(chartData)
-		new Chart(canvas, {
-			type: 'bar',
-			data: chartData,
-			options: {
-				scales: {
-					y: {
-						beginAtZero: true,
-						grid: {
-							display: false
+	generateBarCharts(): void {
+		const chartDataMap: Record<string, any> = {};
+		for (let statCategory of ["pitchingStats", "battingStats"]) {
+			Object.keys(this.activeStats[statCategory]).forEach((stat) => {
+				const chartID = document.getElementById(statCategory + "-" + stat + "-Chart");
+      			const chartData={
+					labels: ["Teams"],
+					datasets: [
+						...this.activeTeams.map((team, index) => ({
+							label: team.name,
+							data: [team[statCategory][stat]],
+							backgroundColor: team.mainColor,
+							borderColor: team.secondaryColor,
+							borderWidth: 2
+						}))
+					]
+				};
+				if (chartID) {
+					const chartDataObj = {
+					  	"chartData": chartData,
+					  	"stat": stat
+					};
+					chartDataMap[chartID.id] = chartDataObj;
+				}
+			});
+		}
+		for (let chartID in chartDataMap) {
+			const existingChart=Chart.getChart(chartID);
+			if (existingChart) {
+				existingChart.destroy()
+			}
+			const canvas: any=document.getElementById(chartID);
+			const chartData=chartDataMap[chartID]["chartData"];
+			new Chart(canvas, {
+				type: 'bar',
+				data: chartData,
+				options: {
+					scales: {
+						y: {
+							beginAtZero: true,
+							grid: {
+								display: false
+							}
+						},
+						x: {
+							display: false,
+							beginAtZero: true,
+							grid: {
+								display: false
+							}
 						}
 					},
-					x: {
-						display: false,
-						beginAtZero: true,
-						grid: {
-							display: false
+					plugins: {
+						legend: {
+							display: false,
+							position: 'top'
+						},
+						title: {
+							display: true,
+							text: chartDataMap[chartID]["stat"],
+							position: 'left'
+						},
+						datalabels: {
+							anchor: 'end',
+							align: 'center',
+							font: {
+								weight: 'bold'
+							},
+							color: 'black', 
+							formatter: function(value: any, context: any) {
+								const datasetIndex=context.datasetIndex;
+								const teamName=chartData.datasets[datasetIndex].label;
+								const shortenedName: string=teamName.split(' ').pop();
+								let formattedValue: string;
+								if (value<1) {
+									formattedValue=value.toFixed(3);
+								} else {
+									formattedValue=value.toFixed(0);
+								}
+								
+								return formattedValue;
+							},
+							textAlign: 'center',
 						}
 					}
 				},
-				plugins: {
-					legend: {
-						display: false,
-						position: 'top'
-					},
-					title: {
-						display: true,
-						text: stat,
-						position: 'left'
-					},
-					datalabels: {
-						anchor: 'center',
-						align: 'center',
-						font: {
-							weight: 'bold'
-						},
-						color: '#ffffff', // Customize the label text color
-						formatter: function(value: any, context: any) {
-							const datasetIndex=context.datasetIndex;
-							const teamName=chartData.datasets[datasetIndex].label;
-							const shortenedName: string=teamName.split(' ').pop();
-							let formattedValue: string;
-							if (value<1) {
-								formattedValue=value.toFixed(3);
-							} else {
-								formattedValue=value.toFixed(0);
-							}
-							
-							return [shortenedName, formattedValue];
-						},
-						textAlign: 'center'
-					}
-				}
-			},
-			plugins: [ChartDataLabels]
-		});
-	}
-	updateCharts(): void {
-		// this.activeStats.forEach((stat) => {
-		//   const canvas: any=document.getElementById(stat + "Chart");
-		//   const existingChart=Chart.getChart(canvas);
-		//   if (existingChart) {
-		//     existingChart.destroy();
-		//   }
-		//   this.generateBarCharts(stat)
-		// });
+				plugins: [ChartDataLabels]
+			});
+			this.detectChanges()
+		}
 	}
 	updateSliderValue(): void {
 		const maxSlider=document.getElementById("maxSlider") as HTMLInputElement;
@@ -487,15 +492,15 @@ export class AppComponent implements OnInit, OnDestroy{
 	toggleTable(): void {
 		this.displayTable=true;
 	}
+	private detectChanges(): void {
+		this.ngZone.run(() => {
+			this.cdr.detectChanges();
+		});
+	}
 	private destroyChart(): void {
 		if (this.chart) {
 			this.chart.destroy();
 		}
 	}
-	private removeSmallChart(stat: string): void {
-		const canvas: any=document.getElementById(stat + "Chart");
-		if (canvas) {
-			canvas.remove();
-		}
-	}
+	
 }
