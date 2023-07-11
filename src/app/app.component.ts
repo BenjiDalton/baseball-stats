@@ -220,7 +220,7 @@ export class AppComponent implements OnInit, OnDestroy{
 					const index=this.activeTeams[this.activeYear].indexOf(team);
 					if (index !== -1) {
 						this.activeTeams[this.activeYear].splice(index, 1);
-						this.generateChart()
+						this.fillChartData()
 				}
 			}
 		});
@@ -265,11 +265,9 @@ export class AppComponent implements OnInit, OnDestroy{
 	switchStatus(event: Event): void {
 		console.log("lol doesn't do anything anymore but maybe will one day idk")
 	}
-	generateChart(): void {
+	fillChartData(): void {
 		this.destroyChart();
-		this.displayStatOptions=true;
-		this.displaySlider=true;
-		const canvas: any=document.getElementById("myChart");
+		this.chartData={"labels": {}, "datasets": []}
 		const increment=1;
 		let maxGames: any;
 		let pointStyle: any;
@@ -277,18 +275,17 @@ export class AppComponent implements OnInit, OnDestroy{
 			maxGames = 162;
 		  } else {
 			maxGames = this.maxSliderValue;
-		}
+		  }
 		const labels = Array.from({ length: Math.ceil(maxGames / increment) }, (_, index) => (index * increment).toString());
 		this.chartData["labels"]=labels
-		
 		for (let year of ["2021", "2022"]) {
 			if (year==="2021") {
 				pointStyle="circle";
 			} else if (year==="2022") {
 				pointStyle="triangle";
 			}
-			
 			const yearData=this.activeTeams[year].map((team: any, index: any) => ({
+				
 				label: team.name + ` (${year})`,
 				data: team.netRecord,
 				backgroundColor: team.mainColor,
@@ -296,79 +293,103 @@ export class AppComponent implements OnInit, OnDestroy{
 				borderWidth: 2,
 				pointRadius: this.pointRadius,
 				pointStyle: pointStyle
-			  }));
+			}));
 			this.chartData["datasets"].push(...yearData);
 		}
-		console.log('2232', this.chartData)
-		this.chart=new Chart(canvas, {
-			type: 'line',
-			data: this.chartData["datasets"],
-			options: {
-				scales: {
-					y: {
-						beginAtZero: true,
-						grid: {
-							display: false
-						}
-					},
-					x: {
-						beginAtZero: true,
-						grid: {
-							display: false
-						}
-					}
-				},
-				interaction: {
-					intersect: true,
-					mode: 'index'
-				},
-				plugins: {
-					tooltip: {
-						callbacks: {
-							label: function(context) {
-								this.title=["Game"+ `${context.dataIndex + 1}`];
-								let label=context.dataset.label || '';
-								let wins=0;
-								let losses=0;
-								if (label) {
-									label += ': ';
-								}
-								if (context.parsed.y !== null) {
-									const dataIndex=context.dataIndex;
-									const winLoss: any=context.dataset.data;
-									for (let i=0; i<=dataIndex; i++) {
-										const value: any=winLoss[i];
-										if (value > winLoss[i-1]) {
-											wins+=1;
-										} else {
-											losses+=1;
-										}
-									}
-									label+=`${wins}-${losses}`;
-								}
-								return label;
-							}
-						}
-					},
-					legend: {
-						position: 'top',
-						labels: {
-							font: {
-								size: 14,
-								weight: 'bold'
-							},
-							usePointStyle: true
-						}
-					}
-				},
-			}
-		});
-		this.chart.update()
+		this.generateChart()
+		
 	}
 
+	updateSliderValue(): void {
+		const maxSlider=document.getElementById("maxSlider") as HTMLInputElement;
+		this.maxSliderValue=maxSlider.value;
+		this.fillChartData()
+	}
+	resetTeamsandChart(keepStats: boolean): void {
+		this.displayStatOptions=keepStats;
+		this.displaySlider=false;
+		this.activeButtons={
+			"Divisions": {} as { [key: string]: boolean },
+			"Teams": {} as { [key: string]: boolean },
+			"pitchingStats": {} as { [key: string]: boolean },
+			"battingStats": {} as { [key: string]: boolean },
+			"2021": {
+				"Teams": []
+			},
+			"2022": {
+				"Teams": []
+			}
+		};
+		this.activeTeams = [];
+		// for (let stat of this.activeStats) {
+		//   this.removeSmallChart(stat)
+		// };
+		
+		// this.activeStats=[];
+		this.destroyChart();
+	}
+	addLine(): void {
+		if (this.chartData["datasets"].length>0) {
+			const newTeamIndex=this.activeTeams[this.activeYear].length - 1;
+			let pointStyle: any;
+			if (this.activeYear==="2021") {
+				pointStyle="circle";
+			} else if (this.activeYear==="2022") {
+				pointStyle="triangle";
+			}
+			const newDataset={
+				label: this.activeTeams[this.activeYear][newTeamIndex].name  + ` (${this.activeYear})`,
+				data: this.activeTeams[this.activeYear][newTeamIndex].netRecord,
+				backgroundColor: this.activeTeams[this.activeYear][newTeamIndex].mainColor,
+				borderColor: this.activeTeams[this.activeYear][newTeamIndex].secondaryColor,
+				borderWidth: 2,
+				pointRadius: this.pointRadius,
+				pointStyle: pointStyle
+			};
+			this.chartData["datasets"].push(newDataset);
+			this.chart.data=this.chartData;
+			this.chart.update();
+		} else {
+			this.displayStatOptions=true;
+			this.displaySlider=true;
+			const increment=1;
+			let maxGames: any;
+			let pointStyle: any;
+			if (!this.maxSliderValue) {
+				maxGames = 162;
+			} else {
+				maxGames = this.maxSliderValue;
+			}
+			const labels = Array.from({ length: Math.ceil(maxGames / increment) }, (_, index) => (index * increment).toString());
+			this.chartData["labels"]=labels
+				
+			this.chartData["datasets"]=this.activeTeams[this.activeYear].map((team: any, index: any) => ({
+				label: team.name + ` (${this.activeYear})`,
+				data: team.netRecord,
+				backgroundColor: team.mainColor,
+				borderColor: team.secondaryColor,
+				borderWidth: 2,
+				pointRadius: this.pointRadius,
+				pointStyle: pointStyle
+			}));
+			this.generateChart()
+		}
+	}
+	removeLine(): void {
+		this.chartData.datasets=this.chartData["datasets"].filter((dataset: any) => {
+			if (!this.activeTeams[this.activeYear].some((team: any) => team.name+ ` (${this.activeYear})`===dataset.label)) {
+				return false;
+			}
+			return true; 
+		});
+		this.chart.update();
+	}
+	toggleTable(): void {
+		this.displayTable=true;
+	}
 	generateBarCharts(): void {
 		const chartDataMap: Record<string, any> = {};
-		
+		console.log("generate bar charts entered")
 		for (let year in this.activeTeams) {
 			const teams = this.activeTeams[year];
 			const yearData: any[] = [];
@@ -484,72 +505,72 @@ export class AppComponent implements OnInit, OnDestroy{
 		}
 		}
 		this.detectChanges();
-	  }
-	  
-	updateSliderValue(): void {
-		const maxSlider=document.getElementById("maxSlider") as HTMLInputElement;
-		this.maxSliderValue=maxSlider.value
-		this.generateChart()
 	}
-	resetTeamsandChart(keepStats: boolean): void {
-		this.displayStatOptions=keepStats;
-		this.displaySlider=false;
-		this.activeButtons={
-			"Divisions": {} as { [key: string]: boolean },
-			"Teams": {} as { [key: string]: boolean },
-			"pitchingStats": {} as { [key: string]: boolean },
-			"battingStats": {} as { [key: string]: boolean },
-			"2021": {
-				"Teams": []
-			},
-			"2022": {
-				"Teams": []
+	private generateChart(): void {
+		const canvas: any=document.getElementById("myChart");
+		this.chart=new Chart(canvas, {
+			type: 'line',
+			data: this.chartData,
+			options: {
+				scales: {
+					y: {
+						beginAtZero: true,
+						grid: {
+							display: false
+						}
+					},
+					x: {
+						beginAtZero: true,
+						grid: {
+							display: false
+						}
+					}
+				},
+				interaction: {
+					intersect: true,
+					mode: 'index'
+				},
+				plugins: {
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								this.title=["Game"+ `${context.dataIndex + 1}`];
+								let label=context.dataset.label || '';
+								let wins=0;
+								let losses=0;
+								if (label) {
+									label += ': ';
+								}
+								if (context.parsed.y !== null) {
+									const dataIndex=context.dataIndex;
+									const winLoss: any=context.dataset.data;
+									for (let i=0; i<=dataIndex; i++) {
+										const value: any=winLoss[i];
+										if (value > winLoss[i-1]) {
+											wins+=1;
+										} else {
+											losses+=1;
+										}
+									}
+									label+=`${wins}-${losses}`;
+								}
+								return label;
+							}
+						}
+					},
+					legend: {
+						position: 'top',
+						labels: {
+							font: {
+								size: 14,
+								weight: 'bold'
+							},
+							usePointStyle: true
+						}
+					}
+				},
 			}
-		};
-		this.activeTeams = [];
-		// for (let stat of this.activeStats) {
-		//   this.removeSmallChart(stat)
-		// };
-		
-		// this.activeStats=[];
-		this.destroyChart();
-	}
-	addLine(): void {
-		if (this.chartData["datasets"].length>0) {
-			const newTeamIndex=this.activeTeams[this.activeYear].length - 1;
-			let pointStyle: any;
-			if (this.activeYear==="2021") {
-				pointStyle="circle";
-			} else if (this.activeYear==="2022") {
-				pointStyle="triangle";
-			}
-			const newDataset={
-				label: this.activeTeams[this.activeYear][newTeamIndex].name  + ` (${this.activeYear})`,
-				data: this.activeTeams[this.activeYear][newTeamIndex].netRecord,
-				backgroundColor: this.activeTeams[this.activeYear][newTeamIndex].mainColor,
-				borderColor: this.activeTeams[this.activeYear][newTeamIndex].secondaryColor,
-				borderWidth: 2,
-				pointRadius: this.pointRadius,
-				pointStyle: pointStyle
-			};
-			this.chartData["datasets"].push(newDataset);
-			this.chart.data=this.chartData;
-			this.chart.update();
-		} else {
-			this.generateChart()
-		}
-	}
-	removeLine(): void {
-		this.chartData.datasets=this.chartData["datasets"].filter((dataset: any) => {
-			if (!this.activeTeams[this.activeYear].some((team: any) => team.name+ ` (${this.activeYear})`===dataset.label)) {
-				return false;
-			}
-			return true; 
 		});
-		this.chart.update();
-	}
-	toggleTable(): void {
-		this.displayTable=true;
 	}
 	private detectChanges(): void {
 		this.ngZone.run(() => {
@@ -559,7 +580,6 @@ export class AppComponent implements OnInit, OnDestroy{
 	private destroyChart(): void {
 		if (this.chart) {
 		  this.chart.destroy();
-		  this.chart = null;
 		}
 	  }
 	
