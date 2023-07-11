@@ -18,19 +18,19 @@
 				<div class="teams-dropdown-column">
 					<div class="teams-dropdown-subheader" id="AmericanLeagueEast">
 						<button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">East</button>
-						<button class="button" *ngFor="let team of entireMLB['AmericanLeague'].East" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
+						<button class="button" *ngFor="let team of entireMLB['AmericanLeague'].East" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons[activeYear]['Teams'][team]" tabindex="0" [id]="team">
 								{{ team }}
 						</button>
 					</div>
 					<div class="teams-dropdown-subheader" id="AmericanLeagueCentral">
 						<button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">Central</button>
-						<button class="button" *ngFor="let team of entireMLB['AmericanLeague'].Central" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
+						<button class="button" *ngFor="let team of entireMLB['AmericanLeague'].Central" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons[activeYear]['Teams'][team]" tabindex="0" [id]="team">
 							{{ team }}
 						</button>
 					</div>
 					<div class="teams-dropdown-subheader" id="AmericanLeagueWest" >
 						<button class="button" style="color: black; font-size:large"(click)="toggleButton($event.target, 'Divisions')">West</button>
-						<button class="button" *ngFor="let team of entireMLB['AmericanLeague'].West" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
+						<button class="button" *ngFor="let team of entireMLB['AmericanLeague'].West" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons[activeYear]['Teams'][team]" tabindex="0" [id]="team">
 							{{ team }}
 						</button>
 					</div>
@@ -39,19 +39,19 @@
 				<div class="teams-dropdown-column">
 					<div class="teams-dropdown-subheader" id="NationalLeagueEast">
 						<button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">East</button>
-						<button class="button" *ngFor="let team of entireMLB['NationalLeague'].East" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
+						<button class="button" *ngFor="let team of entireMLB['NationalLeague'].East" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons[activeYear]['Teams'][team]" tabindex="0" [id]="team">
 							{{ team }}
 						</button>
 					</div>
 					<div class="teams-dropdown-subheader" id="NationalLeagueCentral">
 						<button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">Central</button>
-						<button class="button" *ngFor="let team of entireMLB['NationalLeague'].Central" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
+						<button class="button" *ngFor="let team of entireMLB['NationalLeague'].Central" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons[activeYear]['Teams'][team]" tabindex="0" [id]="team">
 							{{ team }}
 						</button>
 					</div>
 					<div class="teams-dropdown-subheader" id="NationalLeagueWest">
 						<button class="button" style="color: black; font-size:large" (click)="toggleButton($event.target, 'Divisions')">West</button>
-						<button class="button" *ngFor="let team of entireMLB['NationalLeague'].West" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons['Teams'][team]" tabindex="0" [id]="team">
+						<button class="button" *ngFor="let team of entireMLB['NationalLeague'].West" (click)="toggleButton($event.target, 'Teams')" [class.active]="activeButtons[activeYear]['Teams'][team]" tabindex="0" [id]="team">
 							{{ team }}
 						</button>
 					</div>
@@ -104,18 +104,12 @@
 	</div>
 	<div class="side-section">
 		<div class="small-chart">
-			<ng-container *ngFor="let stat of activeStats['pitchingStats']|keyvalue">
+			<ng-container *ngFor="let stat of activeStats[activeYear]['pitchingStats']|keyvalue">
 				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
 			</ng-container>
-			<!-- <ng-container *ngFor="let stat of activeStats['battingStats']|keyvalue">
-				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
-			</ng-container> -->
 		</div>
 		<div class="small-chart">
-			<!-- <ng-container *ngFor="let stat of activeStats['pitchingStats']|keyvalue">
-				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
-			</ng-container> -->
-			<ng-container *ngFor="let stat of activeStats['battingStats']|keyvalue">
+			<ng-container *ngFor="let stat of activeStats[activeYear]['battingStats']|keyvalue">
 				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
 			</ng-container>
 		</div>

@@ -26,12 +26,17 @@ export class AppComponent implements OnInit, OnDestroy{
 	displayTable=false;
 	pageLoaded=false;
 	
-	activeButtons={
+	activeButtons: any={
 		"Divisions": {} as { [key: string]: boolean },
 		"Teams": {} as { [key: string]: boolean },
 		"pitchingStats": {} as { [key: string]: boolean },
 		"battingStats": {} as { [key: string]: boolean },
-		"Years": {} as { [key: string]: boolean }
+		"2021": {
+			"Teams": {}
+		},
+		"2022": {
+			"Teams": {}
+		}
 	};
 	entireMLB={
 		"AmericanLeague": {
@@ -95,14 +100,26 @@ export class AppComponent implements OnInit, OnDestroy{
 		};
 	
 	chart: any;
-	chartData: any;
+	chartData: any = {
+		"labels": {},
+		"datasets": []
+	};
 	activeYear: any;
 	currentYearData: any;
 	teamNames: any;
-	activeTeams: any[]=[];
+	activeTeams: {[year: string]: any;}={
+		"2021": [],
+		"2022": []
+	}
 	activeStats: any = {
-		pitchingStats: {},
-		battingStats: {}
+		"2021": {
+			"pitchingStats": {},
+			"battingStats": {}
+		},
+		"2022": {
+			"pitchingStats": {},
+			"battingStats": {}
+		}
 	};
 	battingStats: any[]=[];
 	pitchingStats: any[]=[];
@@ -152,20 +169,19 @@ export class AppComponent implements OnInit, OnDestroy{
 			} else {
 				this.activeYear="2021"
 			}
-			for (let button in this.activeButtons["Teams"]) {
-				this.activeButtons["Teams"][button]=false;
-			}
-			this.activeTeams=[];
+			// for (let button in this.activeButtons["Teams"]) {
+			// 	this.activeButtons["Teams"][button]=false;
+			// }
+			// this.activeTeams=[];
 			this.currentYearData=this.yearsData[this.activeYear]
 		}
 	}
-
 	toggleButton(eventTarget: EventTarget | null, subclass: "Divisions"| "Teams" | "pitchingStats"| "battingStats"): void {
 		if (eventTarget instanceof HTMLElement) {
 
 			if (subclass==="Teams") {
 				const buttonId=eventTarget.id;
-				this.activeButtons[subclass][buttonId]=!this.activeButtons[subclass]?.[buttonId];
+				this.activeButtons[this.activeYear][subclass][buttonId]=!this.activeButtons[this.activeYear][subclass]?.[buttonId];
 				console.log("Active buttons when subclass == team", this.activeButtons)
 				this.handleTeams()
 			} else if (subclass==="pitchingStats" || subclass==="battingStats") {
@@ -188,16 +204,23 @@ export class AppComponent implements OnInit, OnDestroy{
 	handleTeams(): void {
 		const buttonContainer=document.querySelector(".teams-dropdown-content")
 		const buttons=buttonContainer?.querySelectorAll("button") 
+		if (!this.activeTeams[this.activeYear]) {
+			this.activeTeams[this.activeYear]=[]
+		}
+		if (!this.activeButtons[this.activeYear]["Teams"]) {
+			this.activeButtons[this.activeYear]["Teams"]=[]
+		}
+		console.log("active buttons: ", this.activeButtons)
 		buttons?.forEach((button) => {
 			const team=this.currentYearData['Teams'][button.id];
-			if (this.activeButtons["Teams"][button.id] && !this.activeTeams.includes(team)) {
-					this.activeTeams.push(team);
+			if (this.activeButtons[this.activeYear]["Teams"][button.id] && !this.activeTeams[this.activeYear].includes(team)) {
+					this.activeTeams[this.activeYear].push(team);
 					this.addLine()
-			} else if (!this.activeButtons["Teams"][button.id] && this.activeTeams.includes(team)) {
-					const index=this.activeTeams.indexOf(team);
+			} else if (!this.activeButtons[this.activeYear]["Teams"][button.id] && this.activeTeams[this.activeYear].includes(team)) {
+					const index=this.activeTeams[this.activeYear].indexOf(team);
 					if (index !== -1) {
-						this.activeTeams.splice(index, 1);
-						this.removeLine()
+						this.activeTeams[this.activeYear].splice(index, 1);
+						this.generateChart()
 				}
 			}
 		});
@@ -209,12 +232,12 @@ export class AppComponent implements OnInit, OnDestroy{
 		
 		buttons?.forEach((button) => {
 			if (this.activeButtons[statCategory][button.id]) {
-				if (!this.activeStats[statCategory][button.id]) {
-					this.activeStats[statCategory][button.id]=!this.activeStats[statCategory][button.id]
+				if (!this.activeStats[this.activeYear][statCategory][button.id]) {
+					this.activeStats[this.activeYear][statCategory][button.id]=!this.activeStats[this.activeYear][statCategory][button.id]
 					this.detectChanges()
 				}
 			} else {
-				delete this.activeStats[statCategory][button.id];
+				delete this.activeStats[this.activeYear][statCategory][button.id];
 				}
 			});
 		this.generateBarCharts()
@@ -250,36 +273,36 @@ export class AppComponent implements OnInit, OnDestroy{
 		const increment=1;
 		let maxGames: any;
 		let pointStyle: any;
-		if (this.activeYear==="2021") {
-			pointStyle="circle";
-		} else if (this.activeYear==="2022") {
-			pointStyle="triangle";
-		} 
-		
 		if (!this.maxSliderValue) {
-			maxGames=162;
-		} else {
-			maxGames=this.maxSliderValue;
+			maxGames = 162;
+		  } else {
+			maxGames = this.maxSliderValue;
 		}
-		const labels=Array.from({length: Math.ceil(maxGames / increment) }, (_, index) => (index * increment).toString());
+		const labels = Array.from({ length: Math.ceil(maxGames / increment) }, (_, index) => (index * increment).toString());
+		this.chartData["labels"]=labels
 		
-		this.chartData={
-			labels: labels,
-			datasets: [
-				...this.activeTeams.map((team, index) => ({
-					label: team.name + ` (${this.activeYear})`,
-					data: team.netRecord,
-					backgroundColor: team.mainColor,
-					borderColor: team.secondaryColor,
-					borderWidth: 2,
-					pointRadius: this.pointRadius,
-					pointStyle: pointStyle
-				}))
-			]
-		};
+		for (let year of ["2021", "2022"]) {
+			if (year==="2021") {
+				pointStyle="circle";
+			} else if (year==="2022") {
+				pointStyle="triangle";
+			}
+			
+			const yearData=this.activeTeams[year].map((team: any, index: any) => ({
+				label: team.name + ` (${year})`,
+				data: team.netRecord,
+				backgroundColor: team.mainColor,
+				borderColor: team.secondaryColor,
+				borderWidth: 2,
+				pointRadius: this.pointRadius,
+				pointStyle: pointStyle
+			  }));
+			this.chartData["datasets"].push(...yearData);
+		}
+		console.log('2232', this.chartData)
 		this.chart=new Chart(canvas, {
 			type: 'line',
-			data: this.chartData,
+			data: this.chartData["datasets"],
 			options: {
 				scales: {
 					y: {
@@ -340,98 +363,129 @@ export class AppComponent implements OnInit, OnDestroy{
 				},
 			}
 		});
+		this.chart.update()
 	}
+
 	generateBarCharts(): void {
 		const chartDataMap: Record<string, any> = {};
-		for (let statCategory of ["pitchingStats", "battingStats"]) {
-			Object.keys(this.activeStats[statCategory]).forEach((stat) => {
-				const chartID = document.getElementById(statCategory + "-" + stat + "-Chart");
-      			const chartData={
-					labels: ["Teams"],
-					datasets: [
-						...this.activeTeams.map((team, index) => ({
-							label: team.name,
+		
+		for (let year in this.activeTeams) {
+			const teams = this.activeTeams[year];
+			const yearData: any[] = [];
+
+			for (let statCategory of ["pitchingStats", "battingStats"]) {
+				Object.keys(this.activeStats[year][statCategory]).forEach((stat) => {
+					const chartID = document.getElementById(statCategory + "-" + stat + "-Chart");
+
+					const chartData = {
+						labels: ["Teams"],
+						datasets: teams.map((team: any, index: any) => ({
+							label: team.name + " (" + year + ")",
 							data: [team[statCategory][stat]],
 							backgroundColor: team.mainColor,
 							borderColor: team.secondaryColor,
-							borderWidth: 2
-						}))
-					]
-				};
-				if (chartID) {
-					const chartDataObj = {
-					  	"chartData": chartData,
-					  	"stat": stat
+							borderWidth: 2,
+						})),
 					};
-					chartDataMap[chartID.id] = chartDataObj;
-				}
-			});
-		}
-		for (let chartID in chartDataMap) {
-			const existingChart=Chart.getChart(chartID);
-			if (existingChart) {
-				existingChart.destroy()
+
+					if (chartID) {
+						const chartDataObj = {
+							"chartData": chartData,
+							"stat": stat,
+							"chartID": chartID
+						};
+					yearData.push(chartDataObj);
+					console.log("year data", yearData)
+					}
+				});
 			}
-			const canvas: any=document.getElementById(chartID);
-			const chartData=chartDataMap[chartID]["chartData"];
-			new Chart(canvas, {
-				type: 'bar',
-				data: chartData,
-				options: {
-					scales: {
-						y: {
+
+		if (yearData.length > 0) {
+			chartDataMap[year] = yearData;
+		}
+
+		console.log("chartdatamap: ", chartDataMap)
+		for (let year in chartDataMap) {
+			const yearData = chartDataMap[year];
+
+			for (let chartDataObj of yearData) {
+				console.log(chartDataObj["chartID"])
+				const chartID = document.getElementById(chartDataObj["chartID"].id);
+				const chartData = chartDataObj["chartData"];
+
+				if (chartID) {
+					const existingChart = Chart.getChart(chartID.id);
+
+					if (existingChart) {
+						existingChart.destroy();
+					}
+
+					const canvas: any = document.getElementById(chartID.id);
+
+					new Chart(canvas, {
+						type: 'bar',
+						data: chartData,
+						options: {
+						scales: {
+							y: {
 							beginAtZero: true,
 							grid: {
-								display: false
-							}
-						},
-						x: {
+								display: false,
+							},
+							},
+							x: {
 							display: false,
 							beginAtZero: true,
 							grid: {
-								display: false
-							}
-						}
-					},
-					plugins: {
-						legend: {
-							display: false,
-							position: 'top'
+								display: false,
+							},
+							},
 						},
-						title: {
+						plugins: {
+							legend: {
+							display: false,
+							position: 'top',
+							},
+							title: {
 							display: true,
-							text: chartDataMap[chartID]["stat"],
-							position: 'left'
-						},
-						datalabels: {
-							anchor: 'end',
+							text: chartDataObj["stat"],
+							position: 'left',
+							},
+							datalabels: {
+							anchor: 'center',
 							align: 'center',
 							font: {
-								weight: 'bold'
+								size: 16,
+								weight: 'bold',
 							},
-							color: 'black', 
-							formatter: function(value: any, context: any) {
-								const datasetIndex=context.datasetIndex;
-								const teamName=chartData.datasets[datasetIndex].label;
-								const shortenedName: string=teamName.split(' ').pop();
+							color: 'white',
+							formatter: function (value: any, context: any) {
+								const datasetIndex = context.datasetIndex;
+								const teamName = chartData.datasets[datasetIndex].label;
+								const shortenedName: string = teamName.split(' ').pop();
 								let formattedValue: string;
-								if (value<1) {
-									formattedValue=value.toFixed(3);
+
+								if (value < 1) {
+								formattedValue = value.toFixed(3);
 								} else {
-									formattedValue=value.toFixed(0);
+								formattedValue = value.toFixed(0);
 								}
-								
+
 								return formattedValue;
 							},
 							textAlign: 'center',
-						}
-					}
-				},
-				plugins: [ChartDataLabels]
-			});
-			this.detectChanges()
+							},
+						},
+						},
+						plugins: [ChartDataLabels],
+					});
+				}
+			}
 		}
-	}
+		}
+		this.detectChanges();
+	  }
+	  
 	updateSliderValue(): void {
 		const maxSlider=document.getElementById("maxSlider") as HTMLInputElement;
 		this.maxSliderValue=maxSlider.value
@@ -445,9 +499,14 @@ export class AppComponent implements OnInit, OnDestroy{
 			"Teams": {} as { [key: string]: boolean },
 			"pitchingStats": {} as { [key: string]: boolean },
 			"battingStats": {} as { [key: string]: boolean },
-			"Years": {} as { [key: string]: boolean }
+			"2021": {
+				"Teams": []
+			},
+			"2022": {
+				"Teams": []
+			}
 		};
-		this.activeTeams=[];
+		this.activeTeams = [];
 		// for (let stat of this.activeStats) {
 		//   this.removeSmallChart(stat)
 		// };
@@ -456,8 +515,8 @@ export class AppComponent implements OnInit, OnDestroy{
 		this.destroyChart();
 	}
 	addLine(): void {
-		if (this.chartData) {
-			const newTeamIndex=this.activeTeams.length - 1;
+		if (this.chartData["datasets"].length>0) {
+			const newTeamIndex=this.activeTeams[this.activeYear].length - 1;
 			let pointStyle: any;
 			if (this.activeYear==="2021") {
 				pointStyle="circle";
@@ -465,24 +524,24 @@ export class AppComponent implements OnInit, OnDestroy{
 				pointStyle="triangle";
 			}
 			const newDataset={
-				label: this.activeTeams[newTeamIndex].name  + ` (${this.activeYear})`,
-				data: this.activeTeams[newTeamIndex].netRecord,
-				backgroundColor: this.activeTeams[newTeamIndex].mainColor,
-				borderColor: this.activeTeams[newTeamIndex].secondaryColor,
+				label: this.activeTeams[this.activeYear][newTeamIndex].name  + ` (${this.activeYear})`,
+				data: this.activeTeams[this.activeYear][newTeamIndex].netRecord,
+				backgroundColor: this.activeTeams[this.activeYear][newTeamIndex].mainColor,
+				borderColor: this.activeTeams[this.activeYear][newTeamIndex].secondaryColor,
 				borderWidth: 2,
 				pointRadius: this.pointRadius,
 				pointStyle: pointStyle
 			};
-				this.chartData.datasets.push(newDataset);
-				this.chart.data=this.chartData;
-				this.chart.update();
+			this.chartData["datasets"].push(newDataset);
+			this.chart.data=this.chartData;
+			this.chart.update();
 		} else {
 			this.generateChart()
 		}
 	}
 	removeLine(): void {
-		this.chartData.datasets=this.chartData.datasets.filter((dataset: any) => {
-			if (!this.activeTeams.some((team: any) => team.name+ ` (${this.activeYear})`===dataset.label)) {
+		this.chartData.datasets=this.chartData["datasets"].filter((dataset: any) => {
+			if (!this.activeTeams[this.activeYear].some((team: any) => team.name+ ` (${this.activeYear})`===dataset.label)) {
 				return false;
 			}
 			return true; 
@@ -499,8 +558,9 @@ export class AppComponent implements OnInit, OnDestroy{
 	}
 	private destroyChart(): void {
 		if (this.chart) {
-			this.chart.destroy();
+		  this.chart.destroy();
+		  this.chart = null;
 		}
-	}
+	  }
 	
 }
