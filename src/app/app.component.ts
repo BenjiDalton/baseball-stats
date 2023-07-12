@@ -24,6 +24,10 @@ export class AppComponent implements OnInit, OnDestroy{
 	displayStatOptions=false;
 	displaySlider=false;
 	displayTable=false;
+	displayChartLabels: any={
+		"pitchingStats": false,
+		"battingStats": false
+	}
 	pageLoaded=false;
 	
 	activeButtons: any={
@@ -196,9 +200,6 @@ export class AppComponent implements OnInit, OnDestroy{
 		}
 	this.generateBarCharts();
 	}	
-	toggleTable(): void {
-		this.displayTable=true;
-	}	
 	updateSliderValue(): void {
 		const maxSlider=document.getElementById("maxSlider") as HTMLInputElement;
 		this.maxSliderValue=maxSlider.value;
@@ -359,6 +360,7 @@ export class AppComponent implements OnInit, OnDestroy{
 		const stats: any[]=[];
 		for (let statCategory of ["pitchingStats", "battingStats"]) {
 			Object.keys(this.activeButtons[statCategory]).forEach((stat) => {
+				this.displayChartLabels[statCategory]=true;
 				stats.push([statCategory, stat])
 			});
 		}
@@ -528,23 +530,5 @@ export class AppComponent implements OnInit, OnDestroy{
 		if (this.chart) {
 		  this.chart.destroy();
 		}
-	  }
-	resetTeamsandChart(keepStats: boolean): void {
-		this.displayStatOptions=keepStats;
-		this.displaySlider=false;
-		this.activeButtons={
-			"Divisions": {} as { [key: string]: boolean },
-			"Teams": {} as { [key: string]: boolean },
-			"pitchingStats": {} as { [key: string]: boolean },
-			"battingStats": {} as { [key: string]: boolean },
-			"2021": {
-				"Teams": []
-			},
-			"2022": {
-				"Teams": []
-			}
-		};
-		this.activeTeams = [];
-		this.destroyChart();
 	}
 }
