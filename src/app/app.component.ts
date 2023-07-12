@@ -426,25 +426,25 @@ export class AppComponent implements OnInit, OnDestroy{
 							anchor: 'center',
 							align: 'center',
 							font: {
-								size: 16,
+								size: 14,
 								weight: 'bold',
 								},
-						color: 'white',
-						formatter: function (value: any, context: any) {
-							const datasetIndex = context.datasetIndex;
-							// const teamName = chartData.datasets[datasetIndex].label;
-							// const shortenedName: string = teamName.split(' ').pop();
-							let formattedValue: string;
-	
-							if (value < 1) {
-								formattedValue = value.toFixed(3);
-							} else {
-								formattedValue = value.toFixed(0);
-							}
-	
-							return formattedValue;
-						},
-						textAlign: 'center',
+							color: 'white',
+							formatter: function (value: any, context: any) {
+								const datasetIndex = context.datasetIndex;
+								// const teamName = chartData.datasets[datasetIndex].label;
+								// const shortenedName: string = teamName.split(' ').pop();
+								let formattedValue: string;
+								if (Number.isInteger(value)) {
+									formattedValue = value.toString();
+								} else {
+									formattedValue = value.toFixed(2);
+									if (formattedValue.endsWith('0')) {
+									formattedValue = value.toFixed(0);
+									}
+								}
+							},
+							textAlign: 'center'
 						},
 					},
 					},
