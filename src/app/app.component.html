@@ -102,15 +102,15 @@
 			<input type="range" min="1" max="162" value="162" class="chart-slider" id="maxSlider" (input)="updateSliderValue()">
 		</div>
 	</div>
-	<div *ngIf="activeYear" class="side-section">
+	<div class="side-section">
 		<div class="small-chart">
-			<ng-container *ngFor="let stat of activeStats[activeYear]['pitchingStats']|keyvalue">
-				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
+			<ng-container *ngFor="let stat of activeButtons['pitchingStats']|keyvalue">
+				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart" style="align-items: flex-end;"></canvas>
 			</ng-container>
 		</div>
 		<div class="small-chart">
-			<ng-container *ngFor="let stat of activeStats[activeYear]['battingStats']|keyvalue">
-				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
+			<ng-container *ngFor="let stat of activeButtons['battingStats']|keyvalue">
+				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart" style="align-items: flex-end;"></canvas>
 			</ng-container>
 		</div>
 		
