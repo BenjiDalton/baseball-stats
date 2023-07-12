@@ -62,17 +62,21 @@
 		<div *ngIf="displayStatOptions" class="stats-dropdown">
 			<button class="button" tabindex="0"><span>Batting Stats</span></button>
 			<div class="stats-dropdown-content"id="battingStats">
-				<button *ngFor="let stat of this.yearsData[activeYear]['battingStats']" class="button" (click)="toggleButton($event.target, 'battingStats')" [class.active]="activeButtons['battingStats'][stat]" tabindex="0" [id]="stat">
-					{{ stat }}
-				</button>
+				<div class="column">
+					<button *ngFor="let stat of this.yearsData[activeYear]['battingStats']" class="button" (click)="toggleButton($event.target, 'battingStats')" [class.active]="activeButtons['battingStats'][stat]" tabindex="0" [id]="stat">
+						{{ stat }}
+					</button>
+				</div>
 			</div>
 		</div>
 		<div *ngIf="displayStatOptions" class="stats-dropdown">
 			<button class="button" tabindex="0"><span>Pitching Stats</span></button>
 			<div class="stats-dropdown-content" id="pitchingStats">
-				<button *ngFor="let stat of this.yearsData[activeYear]['pitchingStats']" class="button" (click)="toggleButton($event.target, 'pitchingStats')" [class.active]="activeButtons['pitchingStats'][stat]" tabindex="0" [id]="stat">
-					{{ stat }}
-				</button>
+				<div class="column">
+					<button *ngFor="let stat of this.yearsData[activeYear]['pitchingStats']" class="button" (click)="toggleButton($event.target, 'pitchingStats')" [class.active]="activeButtons['pitchingStats'][stat]" tabindex="0" [id]="stat">
+						{{ stat }}
+					</button>
+				</div>
 			</div>
 		</div>
 		<div class="button" (click)="toggleTable()" tabindex="0"><span>Show Table</span></div>
@@ -105,15 +109,13 @@
 	<div class="side-section">
 		<div class="small-chart">
 			<ng-container *ngFor="let stat of activeButtons['pitchingStats']|keyvalue">
-				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart" style="align-items: flex-end;"></canvas>
+				<canvas [id]="'pitchingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
 			</ng-container>
 		</div>
 		<div class="small-chart">
 			<ng-container *ngFor="let stat of activeButtons['battingStats']|keyvalue">
-				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart" style="align-items: flex-end;"></canvas>
+				<canvas [id]="'battingStats-'+ stat.key + '-Chart'" class="smallChart"></canvas>
 			</ng-container>
 		</div>
-		
-		
 	</div>
 </div>

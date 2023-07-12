@@ -15,6 +15,7 @@
       box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      
     }
   
   p {
@@ -37,6 +38,7 @@
     background-color: #6aa1c4;
     font-weight: 600;
     border-radius: 0px;
+    z-index: 999;
     img {
       margin-right: 20px;
     }
@@ -51,6 +53,7 @@
     justify-content: center;
     align-items: center;  
     height: inherit;
+    z-index: 999;
   }
   
   /* Button */
@@ -89,7 +92,6 @@
   .teams-dropdown-content {
     display: none;
     width: auto;
-    
     position: absolute;
     z-index: 1;
     flex-direction: column;
@@ -151,32 +153,84 @@
     display: block;
     align-items: center;
     height: inherit;
+    z-index: 999;
   }
+  // .stats-dropdown-content {
+  //   display: none;
+  //   position: absolute;
+  //   max-height: 200px;
+  //   left: 0;
+  //   width: 100%; 
+  //   top: 100%;
+  //   background-color: rgba(228, 227, 227);
+  //   border: 4px solid #ccc;
+  //   border-top-style: inset;
+  //   column-count: 3;
+  //   z-index: 999;
+  //   .column {
+  //     display: inline-block;
+  //     vertical-align: top;
+  //     height: inherit;
+  //     .button {
+  //       width: 100%;
+  //       font-size: small;
+  //       height: 20px;
+  //       padding: 0;
+  //       margin: 0;
+  //       z-index: 999;
+  //     }
+  //   }
+
+  // }
   .stats-dropdown-content {
     display: none;
     position: absolute;
+    max-height: 200px;
     left: 0;
-    width: 100%; 
+    width: auto;
     top: 100%;
     background-color: rgba(228, 227, 227);
     border: 4px solid #ccc;
     border-top-style: inset;
-    .button {
-      width: 100%;
-      font-size: small;
-      height: 20px;
-      padding: 0;
-      margin: 0;
-    }
+    
+    z-index: 999;
+  }
+  
+  .stats-dropdown-content .column {
+    display: inline-block;
+    width: auto;
+    height: inherit;
+    column-count: 5;
+    column-gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    top: 100%;
+    margin: 5px;
+    padding: 5px
+  }
+  
+  .stats-dropdown-content .column .button {
+    width: 50px;
+    font-size: small;
+    height: 20px;
+    padding-right: 5px;
+    padding-left: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin: 0;
+    z-index: 999;
   }
   /* Main content */
   .content {
-    margin: 82px auto 32px;
-    padding: 0 16px;
-    max-width: 100%;
+    position: absolute;
     display: flex;
     flex-direction: row;
-    
+    height: 92%;
+    width: 99%;
+    top: 7%;
+    border: 2px solid red;
+    box-sizing: border-box;
+
     .main-section {
       flex: 1;
       display: flex;
@@ -188,8 +242,9 @@
     }
     .side-section {
       display: flex;
-      flex-direction: row;
       row-gap: 20px;
+      flex-direction: row;
+      align-items: flex-start;
     }
   }
   
@@ -201,9 +256,10 @@
   }
   
   .small-chart {
+    position: relative;
     max-width: 200px;
     max-height: 180px;
-    margin-top: 20px;
+    margin-top: 20%;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
@@ -230,42 +286,7 @@
     display: flex;
     align-items: center;
   }
-  
-  .schedule-navbar {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    right: 0;
-    height: 60px;
-    overflow: hidden;
-    flex-direction: row;
-    display: flex;
-    justify-content: center;
-    background-color: rgb(183, 183, 183);
-    overflow-x: auto;
-    font-weight: 600;
-    border: 3px solid #363738;
-    border-radius: 0px;
-    z-index: -1;
-    .button {
-      all: unset;
-      background-color: inherit;
-      min-width: 200px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.2s ease-in-out;
-      line-height: 24px;
-      .team-name {
-        white-space: nowrap;
-      }
-      .team-name::after {
-        content: '\A'; /* Insert a line break after team names */
-        white-space: pre; /* Preserve the line break */
-      }
-    }
-  }
+
   
   .active {
     background-color: rgb(127, 127, 127, 1);
@@ -327,7 +348,7 @@ input:checked + .slider:after {
     position: relative;
     width: 900px;
     height: 15px;
-    z-index: -1;
+    z-index: 999;
 }
 
 .chart-slider {
@@ -337,7 +358,7 @@ input:checked + .slider:after {
     opacity: 0.7;
     -webkit-transition: .2s;
     transition: opacity .2s;
-    z-index: 999;
+    z-index: 1;
 }
 
 .chart-slider::-moz-range-track {
@@ -345,7 +366,7 @@ input:checked + .slider:after {
     height: inherit;
     background: #d8dde1;
     cursor: pointer;
-    z-index: 999;
+    z-index: 1;
   }
 .chart-slider::-moz-range-track::after {
     background: #204a33;
@@ -362,7 +383,7 @@ input:checked + .slider:after {
     cursor: pointer;
     margin-top: -14px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
     box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d; /* Add cool effects to your sliders! */
-    z-index: 999;
+    z-index: 1;
   }
   
   /* All the same stuff for Firefox */
@@ -373,7 +394,7 @@ input:checked + .slider:after {
     border-radius: 3px;
     background: #6a668e;
     cursor: pointer;
-    z-index: 999;
+    z-index: 1;
   }
   .chart-slider::-moz-range-thumb:hover {
     box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
