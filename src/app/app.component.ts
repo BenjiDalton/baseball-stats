@@ -3,6 +3,7 @@ import { HttpClient} from '@angular/common/http';
 import { Chart } from 'chart.js/auto';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Observable } from 'rxjs';
+import { APIGatewayHandlerComponent } from './apigateway-handler/apigateway-handler.component';
 
 @Component({
 	selector: 'app-root',
@@ -17,7 +18,11 @@ import { Observable } from 'rxjs';
 */
 
 export class AppComponent implements OnInit, OnDestroy{
-	constructor(private httpclient: HttpClient, private ngZone: NgZone, private cdr: ChangeDetectorRef) {
+	constructor(
+		private httpclient: HttpClient, 
+		private ngZone: NgZone, 
+		private cdr: ChangeDetectorRef, 
+		private apiGatewayHandler: APIGatewayHandlerComponent) {
 	}
 	title='baseball_scraper_app';
 	
@@ -151,7 +156,7 @@ export class AppComponent implements OnInit, OnDestroy{
 	}
 	fetch2022Schedule(): Observable<any[]> {
 		return new Observable<any[]>((observer) => {
-		this.httpclient.get<any[]>('https://nw00meomfg.execute-api.us-east-2.amazonaws.com/dev/2022-scraper').subscribe(result => {
+		this.httpclient.get<any[]>(this.apiGatewayHandler.scraper2022).subscribe(result => {
 			const [teamData, statNames]=result;
 			observer.next([teamData, statNames]);
 			observer.complete();
@@ -159,7 +164,7 @@ export class AppComponent implements OnInit, OnDestroy{
 	}
 	fetch2021Schedule(): Observable<any[]> {
 		return new Observable<any[]>((observer) => {
-		this.httpclient.get<any[]>('https://nw00meomfg.execute-api.us-east-2.amazonaws.com/dev/2021-scraper').subscribe(result => {
+		this.httpclient.get<any[]>(this.apiGatewayHandler.scraper2021).subscribe(result => {
 			const [teamData, statNames]=result;
 			observer.next([teamData, statNames]);
 			observer.complete();

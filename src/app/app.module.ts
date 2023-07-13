@@ -4,17 +4,19 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { DataTableComponent } from './data-table/data-table.component';
+import { APIGatewayHandlerComponent } from './apigateway-handler/apigateway-handler.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DataTableComponent
+    DataTableComponent,
+    APIGatewayHandlerComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [APIGatewayHandlerComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
