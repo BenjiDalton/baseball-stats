@@ -42,4 +42,4 @@ testem.log
 Thumbs.db
 
 # API handlers
-./src/app/apigateway-handler/apigateway-handler.component.ts
+src/app/apigateway-handler/
